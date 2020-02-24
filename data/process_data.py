@@ -33,7 +33,7 @@ def clean_data(df):
 
 def save_data(df, database_filename):
     engine = create_engine('sqlite:///'+database_filename)
-    df.to_sql(database_filename, engine, index=False)  
+    df.to_sql('messages', engine, index=False, if_exists='replace')
 
 
 def main():
@@ -48,12 +48,7 @@ def main():
             if not os.path.exists(categories_filepath) :
                 print('Can\'t find : %s' % categories_filepath)
             return
-        
-        # Check if ouptut file already exists
-        if (os.path.exists(database_filepath)) :
-            print ("Output file %s already exists\nPlease delete file first if you want to update" % database_filepath)
-            return
-                  
+                          
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
               .format(messages_filepath, categories_filepath))
         df = load_data(messages_filepath, categories_filepath)
