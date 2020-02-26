@@ -6,7 +6,7 @@
 3. Instructions
 
 # 1. Introduction
-This project demonstrates how to make an ETL pipeline, Machine Learning pipeline and finaly a web app. It uses (social) media data scaped from the web to predict if there us a help post between them.
+This project demonstrates how to make an ETL pipeline, Machine Learning pipeline and finaly a web app. It uses (social) media data scaped from the web to predict if there is a help post between them.
 
 # 2. Installation
 This project is written in Python 3.5. Make sure that the folowing libraries are installed:
