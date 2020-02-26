@@ -17,7 +17,7 @@ This project is written in Python 3.5. Make sure that the folowing libraries are
 - flask
 
 # 3. Instructions:
-1. First run the ETL pipeline to make a .db file from the raw events
+1. First run the ETL pipeline to make a SQLite .db file from the raw events
 `python data/process_data.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db`
 
 2. Run the ML pipeline to make a pkl file with the trained model
