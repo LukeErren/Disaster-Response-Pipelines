@@ -1,9 +1,11 @@
 import json
 import plotly
 import pandas as pd
+import re
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 from flask import Flask
 from flask import render_template, request, jsonify
@@ -19,37 +21,47 @@ nltk.download([ 'stopwords'])
 app = Flask(__name__)
 
 def tokenize(text):
-    # Replace URL's
-    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-    detected_urls = re.findall(url_regex, text)
-    for url in detected_urls:
-        text = text.replace(url, "urlplaceholder")
+   """  Tokenize a string
+   
+        Parameters
+        ----------
+        text = string to be tokenized
         
-    # Replace special signs to text
-    ReplaceList = [ ["&amp;", "&"], [ "&gt;", ">"], [ "&lt;", "<"], [ "&nbsp;" , " "], [ "&quot;" , "\""], 
-                    ["£", " GBP "], ["$", " Dollar "], ["€", " Euro "], 
-                    ["%", " percent "], ["&", " and "],    ["°", " degree "]
-                  ]
+        Returns
+        -------
+        list of tokens
+   """
+   # Replace URL's
+   url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+   detected_urls = re.findall(url_regex, text)
+   for url in detected_urls:
+       text = text.replace(url, "urlplaceholder")
+        
+   # Replace special signs to text
+   ReplaceList = [ ["&amp;", "&"], [ "&gt;", ">"], [ "&lt;", "<"], [ "&nbsp;" , " "], [ "&quot;" , "\""], 
+                   ["£", " GBP "], ["$", " Dollar "], ["€", " Euro "], 
+                   ["%", " percent "], ["&", " and "],    ["°", " degree "]
+                 ]
     
-    for item in ReplaceList :
-        text = text.replace(item[0], item[1]) 
+   for item in ReplaceList :
+       text = text.replace(item[0], item[1]) 
         
-    # Punctuation Removal
-    text = re.sub(r"[^a-zA-Z0-9]", " ", text) 
+   # Punctuation Removal
+   text = re.sub(r"[^a-zA-Z0-9]", " ", text) 
       
-    # Tokenize
-    tokens = word_tokenize(text)
-    lemmatizer = WordNetLemmatizer()
+   # Tokenize
+   tokens = word_tokenize(text)
+   lemmatizer = WordNetLemmatizer()
     
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
+   clean_tokens = []
+   for tok in tokens:
+       clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+       clean_tokens.append(clean_tok)
     
-    # Remove stop words, words that are not important for a scentence
-    clean_tokens = [w for w in clean_tokens if w not in stopwords.words("english")]
+   # Remove stop words, words that are not important for a scentence
+   clean_tokens = [w for w in clean_tokens if w not in stopwords.words("english")]
 
-    return clean_tokens
+   return clean_tokens
 
 
 # load data
@@ -116,7 +128,6 @@ def go():
         query=query,
         classification_result=classification_results
     )
-
 
 def main():
     app.run(host='0.0.0.0', port=3001, debug=True)
