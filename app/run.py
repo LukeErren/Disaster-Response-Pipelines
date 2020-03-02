@@ -11,26 +11,53 @@ from plotly.graph_objs import Bar
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
+# Import NLTK resources
+import nltk
+nltk.download([ 'stopwords'])
+
 
 app = Flask(__name__)
 
 def tokenize(text):
+    # Replace URL's
+    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "urlplaceholder")
+        
+    # Replace special signs to text
+    ReplaceList = [ ["&amp;", "&"], [ "&gt;", ">"], [ "&lt;", "<"], [ "&nbsp;" , " "], [ "&quot;" , "\""], 
+                    ["£", " GBP "], ["$", " Dollar "], ["€", " Euro "], 
+                    ["%", " percent "], ["&", " and "],    ["°", " degree "]
+                  ]
+    
+    for item in ReplaceList :
+        text = text.replace(item[0], item[1]) 
+        
+    # Punctuation Removal
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text) 
+      
+    # Tokenize
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
-
+    
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
         clean_tokens.append(clean_tok)
+    
+    # Remove stop words, words that are not important for a scentence
+    clean_tokens = [w for w in clean_tokens if w not in stopwords.words("english")]
 
     return clean_tokens
 
+
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
+df = pd.read_sql_table('messages', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -39,28 +66,27 @@ model = joblib.load("../models/your_model_name.pkl")
 def index():
     
     # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
-    genre_counts = df.groupby('genre').count()['message']
-    genre_names = list(genre_counts.index)
+    catagory_counts = df.iloc[:,5:].sum().sort_values(ascending=False)
+    catagory_names = catagory_counts.index.tolist()
     
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
                 Bar(
-                    x=genre_names,
-                    y=genre_counts
+                    x=catagory_names,
+                    y=catagory_counts
                 )
             ],
+            
 
             'layout': {
-                'title': 'Distribution of Message Genres',
+                'title': 'Distribution of the Message catagories',
                 'yaxis': {
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Catagory"
                 }
             }
         }
@@ -94,7 +120,6 @@ def go():
 
 def main():
     app.run(host='0.0.0.0', port=3001, debug=True)
-
 
 if __name__ == '__main__':
     main()
