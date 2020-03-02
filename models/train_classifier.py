@@ -35,6 +35,7 @@ def load_data(database_filename):
         -------
         X, Y, category_names
     """     
+
     
     engine = create_engine('sqlite:///{}'.format(database_filename))
     df = pd.read_sql_table('messages', engine)
@@ -53,6 +54,16 @@ def load_data(database_filename):
 
 
 def tokenize(text):
+    """  Tokenize a string
+   
+         Parameters
+         ----------
+         text = string to be tokenized
+        
+         Returns
+         -------
+         list of tokens
+   """
      
     # Replace URL's
     url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
@@ -87,6 +98,16 @@ def tokenize(text):
     return clean_tokens
 
 def build_model():
+    """  Returns the machine learning pipeline
+   
+         Parameters
+         ----------
+         none
+        
+         Returns
+         -------
+         machine learning pipeline
+    """  
     return Pipeline([
         ('vect', CountVectorizer( tokenizer=tokenize, 
                                   strip_accents='unicode',
@@ -98,7 +119,7 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    
+    """  Evaluate the trained model """      
     # predict on test data with tuned params
     y_pred = model.predict(X_test)
     
@@ -111,6 +132,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
         print (classification_report(Y_test.iloc[:,k], y_pred[:,k])) 
     
 def save_model(model, model_filepath):
+    """" Save the tained model to a Pickle file """"
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
